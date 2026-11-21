@@ -1,0 +1,5 @@
+"use client";
+import { signIn } from "next-auth/react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+export default function Login() { const router = useRouter(); const [error, setError] = useState(""); return <main className="mx-auto max-w-sm p-8"><h1 className="text-2xl font-bold">Entrar</h1><form className="mt-6 grid gap-3" onSubmit={async e => { e.preventDefault(); const form = new FormData(e.currentTarget); const result = await signIn("credentials", { email: form.get("email"), password: form.get("password"), redirect: false }); if (result?.error) setError("Credenciais inválidas"); else router.push("/trips"); }}><input className="border p-2" name="email" type="email" placeholder="Email" required/><input className="border p-2" name="password" type="password" placeholder="Senha" required/><button className="bg-black p-2 text-white" type="submit">Entrar</button>{error && <p role="alert">{error}</p>}</form><p className="mt-4 text-sm">Cadastre-se via POST /api/auth/register.</p></main>; }

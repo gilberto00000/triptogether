@@ -1,0 +1,12 @@
+import * as yup from "yup";
+const id = yup.string().matches(/^[0-9a-fA-F]{24}$/, "ID inválido").required();
+export const registerSchema = yup.object({ name: yup.string().trim().min(2).max(100).required(), email: yup.string().email().required(), password: yup.string().min(8).max(128).required() });
+export const tripSchema = yup.object({ title: yup.string().trim().min(2).max(120).required(), destination: yup.string().trim().min(2).max(120).required(), description: yup.string().max(1000).default(""), startDate: yup.date().required(), endDate: yup.date().required().min(yup.ref("startDate"), "Fim anterior ao início") });
+export const tripPatchSchema = tripSchema.partial();
+export const activitySchema = yup.object({ title: yup.string().trim().min(2).required(), location: yup.string().max(200).default(""), startsAt: yup.date().required(), endsAt: yup.date().optional(), notes: yup.string().max(1000).default("") });
+export const activityPatchSchema = activitySchema.partial();
+export const expenseSchema = yup.object({ title: yup.string().trim().min(2).required(), amountCents: yup.number().integer().positive().required(), paidBy: id, splitAmong: yup.array().of(id).min(1).required(), spentAt: yup.date().optional() });
+export const expensePatchSchema = expenseSchema.partial();
+export const itemSchema = yup.object({ title: yup.string().trim().min(1).max(200).required(), assignedTo: id.nullable().optional(), checked: yup.boolean().default(false) });
+export const itemPatchSchema = itemSchema.partial();
+export const participantSchema = yup.object({ email: yup.string().email().required() });

@@ -1,0 +1,7 @@
+import { NextResponse } from "next/server";
+import { ChecklistItem } from "@/models/ChecklistItem";
+import { bodyOf, currentUserId, handleError, objectId, tripAccess, ApiError } from "@/lib/api";
+import { itemPatchSchema } from "@/lib/schemas";
+type C = { params: Promise<{ id: string; itemId: string }> };
+export async function PATCH(req: Request, { params }: C) { try { const { id, itemId } = await params; const trip = await tripAccess(id, await currentUserId()); objectId(itemId); const item = await ChecklistItem.findOne({ _id: itemId, trip: id }); if (!item) return NextResponse.json({ error: "Registro não encontrado" }, { status: 404 }); const data = await bodyOf(req, itemPatchSchema); if (data.assignedTo && !trip.participants.some((p: { toString(): string }) => String(p) === data.assignedTo)) throw new ApiError(400, "Responsável não participa da viagem"); Object.assign(item, data); await item.save(); return NextResponse.json(item); } catch(e) { return handleError(e); } }
+export async function DELETE(_req: Request, { params }: C) { try { const { id, itemId } = await params; await tripAccess(id, await currentUserId()); objectId(itemId); const item = await ChecklistItem.findOneAndDelete({ _id: itemId, trip: id }); if (!item) return NextResponse.json({ error: "Registro não encontrado" }, { status: 404 }); return NextResponse.json({ message: "Registro excluído" }); } catch(e) { return handleError(e); } }
