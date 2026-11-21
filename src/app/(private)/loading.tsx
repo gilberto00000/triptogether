@@ -1,1 +1,4 @@
-export default function Loading() { return <p className="p-8" role="status">Carregando viagens...</p>; }
+import { Skeleton } from "@/components/ui";
+export default function Loading() {
+  return <div className="grid gap-4"><Skeleton className="h-24" /><Skeleton /><Skeleton /></div>;
+}

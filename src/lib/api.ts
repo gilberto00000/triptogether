@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { isValidObjectId } from "mongoose";
-import { dbConnect } from "@/lib/db";
+import { dbConnect, dbErrorMessage } from "@/lib/db";
 import { Trip } from "@/models/Trip";
 import * as yup from "yup";
 export class ApiError extends Error {
@@ -45,7 +45,7 @@ export function handleError(error: unknown) {
         { status: error.status });
     if (error instanceof yup.ValidationError)
         return NextResponse.json({ error: error.errors.join("; ") },
-            { status: 400 }); console.error(error); return NextResponse.json({ error: "Erro interno" },
+            { status: 400 }); const dbMsg = dbErrorMessage(error); if (dbMsg) { console.error(error); return NextResponse.json({ error: dbMsg }, { status: 503 }); } console.error(error); return NextResponse.json({ error: "Erro interno" },
                 { status: 500 });
 }
 export const paramsId = (ctx: { params: Promise<{ id: string }> }) => ctx.params;
