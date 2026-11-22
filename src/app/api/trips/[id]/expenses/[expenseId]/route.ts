@@ -3,5 +3,54 @@ import { Expense } from "@/models/Expense";
 import { bodyOf, currentUserId, handleError, objectId, tripAccess, ApiError } from "@/lib/api";
 import { expensePatchSchema } from "@/lib/schemas";
 type C = { params: Promise<{ id: string; expenseId: string }> };
-export async function PATCH(req: Request, { params }: C) { try { const { id, expenseId } = await params; const trip = await tripAccess(id, await currentUserId()); objectId(expenseId); const item = await Expense.findOne({ _id: expenseId, trip: id }); if (!item) return NextResponse.json({ error: "Registro não encontrado" }, { status: 404 }); const data = await bodyOf(req, expensePatchSchema); const members = new Set(trip.participants.map((p: { toString(): string }) => String(p))); const payer = data.paidBy ?? String(item.paidBy); const split = data.splitAmong ?? item.splitAmong.map((p: { toString(): string }) => String(p)); if (!members.has(payer) || split.some((x: string) => !members.has(x)) || new Set(split).size !== split.length) throw new ApiError(400, "Divisão inválida"); Object.assign(item, data); await item.save(); return NextResponse.json(item); } catch(e) { return handleError(e); } }
-export async function DELETE(_req: Request, { params }: C) { try { const { id, expenseId } = await params; await tripAccess(id, await currentUserId()); objectId(expenseId); const item = await Expense.findOneAndDelete({ _id: expenseId, trip: id }); if (!item) return NextResponse.json({ error: "Registro não encontrado" }, { status: 404 }); return NextResponse.json({ message: "Registro excluído" }); } catch(e) { return handleError(e); } }
+export async function PATCH(
+    req: Request,
+    { params }: C) {
+    try {
+        const { id, expenseId } = await params;
+        const trip = await tripAccess(id, await currentUserId());
+        objectId(expenseId);
+        const item = await Expense.findOne({ _id: expenseId, trip: id });
+        if (!item)
+            return NextResponse.json(
+                { error: "Registro não encontrado" },
+                { status: 404 });
+
+        const data = await bodyOf(req, expensePatchSchema);
+        const members = new Set(trip.participants.map((p: { toString(): string }) => String(p)));
+        const payer = data.paidBy ?? String(item.paidBy);
+        const split = data.splitAmong ?? item.splitAmong.map((p: { toString(): string }) => String(p));
+
+        if (!members.has(payer) || split.some((x: string) => !members.has(x)) || new Set(split).size !== split.length)
+            throw new ApiError(400, "Divisão inválida");
+
+        Object.assign(item, data);
+
+        await item.save();
+
+        return NextResponse.json(item);
+
+    } catch (e) {
+        return handleError(e);
+    }
+}
+export async function DELETE(
+    _req: Request,
+    { params }: C) {
+    try {
+
+        const { id, expenseId } = await params;
+
+        await tripAccess(id, await currentUserId());
+        objectId(expenseId); const item = await Expense.findOneAndDelete({ _id: expenseId, trip: id });
+
+        if (!item) return NextResponse.json(
+            { error: "Registro não encontrado" },
+            { status: 404 });
+
+        return NextResponse.json({ message: "Registro excluído" });
+
+    } catch (e) {
+        return handleError(e);
+    }
+}

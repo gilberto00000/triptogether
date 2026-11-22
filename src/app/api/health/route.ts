@@ -10,9 +10,16 @@ export async function GET() {
   try {
     await dbConnect();
     await mongoose.connection.db!.admin().ping();
-    return NextResponse.json({ ok: true, database: mongoose.connection.name, env: auth });
+    return NextResponse.json({
+      ok: true, database: mongoose.connection.name, env: auth
+    });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ ok: false, error: dbErrorMessage(e) ?? "Falha ao conectar ao banco.", env: auth }, { status: 503 });
+    return NextResponse.json({
+      ok: false,
+      error: dbErrorMessage(e) ?? "Falha ao conectar ao banco.",
+      env: auth
+    },
+      { status: 503 });
   }
 }
